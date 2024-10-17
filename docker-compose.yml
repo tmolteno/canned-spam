@@ -1,0 +1,18 @@
+
+services:
+
+    spam:
+        build: 
+            context: .
+        volumes:
+            -   ~/tart_web_api_store:/app
+        # Comment the following two lines to disable access to the TART hardware (this allows testing of software on a desktop)
+        # environment:
+            # Change the following to be something secure. You will use this to login to your telescope from the web api.
+            # - LOGIN_PW=${LOGIN_PW}
+        restart: never
+        logging:
+            driver: "json-file"
+            options:
+                max-file: "5"
+                max-size: "10m"
