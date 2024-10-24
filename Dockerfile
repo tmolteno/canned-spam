@@ -1,4 +1,4 @@
-FROM debian/eol:jessie
+FROM debian:bullseye
 LABEL Maintainer: Tim Molteno "tim@elec.ac.nz"
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -27,11 +27,11 @@ WORKDIR /build
 RUN mkdir spam
 WORKDIR /build/spam 
 
-RUN curl -O https://ftp.strw.leidenuniv.nl/intema/spam/spam_20240308.tgz
-RUN curl -O https://ftp.strw.leidenuniv.nl/intema/spam/spam_etc_20181208.tgz
-RUN curl -O https://ftp.strw.leidenuniv.nl/intema/spam/AIPS_31DEC13.tgz
-RUN curl -O https://ftp.strw.leidenuniv.nl/intema/spam/parseltongue-2.3e.tgz
-RUN curl -O https://ftp.strw.leidenuniv.nl/intema/spam/obit_20160115.tgz
+ADD files/spam_20240308.tgz .
+ADD files/spam_etc_20181208.tgz .
+ADD files/AIPS_31DEC13.tgz .
+ADD files/parseltongue-2.3e.tgz .
+ADD files/obit_20160115.tgz .
 
 # Install SPAM support files
 
@@ -57,12 +57,38 @@ WORKDIR /build/spam/AIPS
 RUN groupadd -g 1234 spamgroup && \
     useradd -m -u 1234 -g spamgroup spamuser
 
-USER spamuser
+USER spamuser:spamgroup
+
+ADD files/.AIPSRC .AIPSRC
+RUN cat .AIPSRC
 
 USER root
 # RUN perl install.pl -n
-RUN touch .AIPSRC
-RUN cat .AIPSRC
+
+
+
+# Configuring AIPS using the expect script which provides inputs for the
+# prompts from AIPS commands. 
+COPY services /root/services
+COPY script.exp /usr/local/aips/
+
+RUN apt install -y expect
+RUN cd /usr/local/aips/ && \
+    chmod +x script.exp && \
+    ./script.exp &&\
+    chmod +x LOGIN.SH
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 ## Install Orbit Core
 
@@ -76,11 +102,29 @@ RUN tar zxf obit_20160115.tgz
 ENV PYTHONPATH="$SPAM_PATH/Obit/python:$PYTHONPATH"
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SPAM_PATH/lib"
 
-RUN aptitude install -y python-fftw
+RUN apt-get autoremove
+RUN aptitude install -y -f build-essential
 
+WORKDIR /build/spam/lib
+ADD https://ftp.strw.leidenuniv.nl/intema/spam/lib/libfftw3f.so.3 .
+ADD https://ftp.strw.leidenuniv.nl/intema/spam/lib/libgslcblas.so.0 .
+ADD https://ftp.strw.leidenuniv.nl/intema/spam/lib/libquadmath.so.0 .
+RUN ls -l
+
+WORKDIR /build/spam
 COPY test.py .
 RUN python2.7 test.py
 
 RUN tar xzf parseltongue-2.3e.tgz
 WORKDIR /build/spam/parseltongue-2.3e
 RUN ./configure --prefix=$SPAM_PATH/ParselTongue --with-obit=$SPAM_PATH/Obit
+RUN make install
+
+# Install SPAM
+
+WORKDIR /build/spam
+RUN ls -l
+RUN tar xzf spam_2*.tgz
+WORKDIR /build/spam/python/spam
+
+RUN make
