@@ -1,41 +1,47 @@
-FROM debian:bullseye
+FROM debian:10
 LABEL Maintainer: Tim Molteno "tim@elec.ac.nz"
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN cat /etc/apt/sources.list 
-
-RUN echo "deb http://archive.debian.org/debian/ jessie main" > /etc/apt/sources.list
 
 # debian setup
 RUN apt-get update 
-RUN apt-get install -y aptitude
-RUN aptitude upgrade
-RUN aptitude install -y gcc make swig
+RUN apt-get -y upgrade
+RUN apt-get install -y build-essential make swig
 
-RUN aptitude install -y \
+RUN apt-get install -y \
     curl \
     python-matplotlib \
-    python-astropy \
     python-numpy \
     python-scipy 
 
-RUN aptitude install -y mplayer imagemagick
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
+RUN apt-get install -y mplayer imagemagick
 
 # RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build 
-RUN mkdir spam
+
+
+RUN groupadd -g 1234 spamgroup && \
+    useradd -m -u 1234 -g spamgroup spamuser
+
+RUN apt-get install -y expect cvs
+
+
+USER spamuser:spamgroup
+
+
 WORKDIR /build/spam 
 
-ADD files/spam_20240308.tgz .
-ADD files/spam_etc_20181208.tgz .
-ADD files/AIPS_31DEC13.tgz .
-ADD files/parseltongue-2.3e.tgz .
-ADD files/obit_20160115.tgz .
+COPY files/spam_20240308.tgz spam.tgz
+COPY files/spam_etc_20181208.tgz spam_etc.tgz
+COPY files/AIPS_31DEC13.tgz .
+COPY files/parseltongue-2.3e.tgz .
+COPY files/obit_20160115.tgz .
 
 # Install SPAM support files
 
-RUN tar xzf spam_etc_*.tgz
+RUN tar xzf spam_etc.tgz
 
 RUN ls -l
 #export SPAM_PATH=/net/dedemsvaart/data1/spam_devel
@@ -54,29 +60,26 @@ ENV PATH="$SPAM_PATH/bin:$PATH"
 RUN tar xzf AIPS_31DEC13.tgz
 WORKDIR /build/spam/AIPS
 
-RUN groupadd -g 1234 spamgroup && \
-    useradd -m -u 1234 -g spamgroup spamuser
 
-USER spamuser:spamgroup
 
 ADD files/.AIPSRC .AIPSRC
 RUN cat .AIPSRC
 
+COPY files/install.exp .
+
+RUN ./install.exp
+
 USER root
-# RUN perl install.pl -n
 
 
 
 # Configuring AIPS using the expect script which provides inputs for the
 # prompts from AIPS commands. 
-COPY services /root/services
-COPY script.exp /usr/local/aips/
+COPY files/services /root/services
+COPY files/script.exp .
 
-RUN apt install -y expect
-RUN cd /usr/local/aips/ && \
-    chmod +x script.exp && \
-    ./script.exp &&\
-    chmod +x LOGIN.SH
+RUN ./script.exp
+RUN chmod +x LOGIN.SH
 
 
 

@@ -1,6 +1,6 @@
 # canned-spam
 
-A continerized SPAM installation that can run on modern systems
+A continerized SPAM installation that can run on modern systems.
 
 SPAM has lots of weird dependencies, and this is a dockerized install Hopefully this means it fully documents the process of installation of SPAM.
 

@@ -1,0 +1,29 @@
+#!/usr/bin/expect
+
+# Start by sourcing the install script
+spawn perl install.pl -n
+
+expect "===>"
+send "\n"
+expect "What group should be used for AIPS?"
+send "spamgroup\n"
+send "\r"
+send "University of Otago\r"
+send "\r"
+send "\r"
+send "\r"
+send "/build/spam/DATA/LOCALHOST_1:NONE\r"
+send "\r"
+send "\r"
+send "\r"
+send "\r"
+send "\r"
+send "\r"
+
+send "\r"
+send "\r"
+
+send "\r"
+send "\r"
+
+expect eof
