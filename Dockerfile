@@ -143,4 +143,11 @@ WORKDIR /build/spam/python/spam
 
 RUN make
 
-CMD /bin/bash
+WORKDIR /build/spam
+
+RUN curl 'https://raw.githubusercontent.com/pypa/get-pip/20.3.4/get-pip.py' -o get-pip.py
+RUN python get-pip.py
+RUN pip install astropy
+
+RUN . ./setup.sh
+CMD /bin/sh -i
