@@ -1,12 +1,17 @@
 DOCKER=/usr/bin/docker
 COMPOSE=/usr/bin/docker compose --progress plain
-USER=tart
+
+run:
+	CURRENT_UID=$(id -u):$(id -g) ${COMPOSE} --parallel 1 -f docker-compose.yml run --rm spam
+
+docker_build:
+	docker build --tag spam_image .
+
+docker_run:
+	docker run -i -t -v ~/spam_store:/spam_store spam_image
 
 build:
 	${COMPOSE} --parallel 1 -f docker-compose.yml build
-
-run:
-	${COMPOSE} --parallel 1 -f docker-compose.yml run --rm spam
 
 # Huge download ~600 MB
 get:

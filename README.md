@@ -1,6 +1,6 @@
 # canned-spam
 
-A continerized SPAM installation that can run on modern systems.
+A containerised SPAM installation that can run on modern systems.
 
 SPAM has lots of weird dependencies, and this is a dockerized install Hopefully this means it fully documents the process of installation of SPAM.
 
@@ -8,11 +8,15 @@ SPAM has lots of weird dependencies, and this is a dockerized install Hopefully 
 
 You need Docker installed, as well as docker compose (to make things easiest). Then build the docker container on your local machine.
 
+### Pre-requisite 
+
 The first step is to download the installation files (~600 MB in size. do this only once)
 
     make get
-    
-Then build the SPAM docker container
+
+### With docker compose
+
+Build the SPAM docker container (requires make get to have been done once)
 
     make build
     
@@ -22,7 +26,19 @@ Then run the SPAM docker container
 
 This will give you a command prompt on your local machine with the SPAM container running in a directory that maps to ~/spam_store in your home directory.
 
-### Using SPAM
+### With docker
+
+Build the SPAM docker container (requires make get to have been done once)
+
+    make docker_build
+    
+Then run the SPAM docker container
+
+    make docker_run 
+
+This will give you a command prompt on your local machine with the SPAM container running in a directory that maps to ~/spam_store in your home directory.
+
+## Using SPAM
 
 Follow (http://www.intema.nl/doku.php?id=huibintema:spam:startup) to test your install.
 
@@ -47,6 +63,8 @@ The final test is to import SPAM as a python module
     
 If no errors, then you're good to go.
 
+
+## Example script
 
 
 
