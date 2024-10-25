@@ -14,10 +14,10 @@ RUN apt-get update && \
     imagemagick \
     expect cvs
 
-RUN apt-get install -y fish
+RUN apt-get install -y fish vim
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
 
-# RUN rm -rf /var/lib/apt/lists/*
+RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build 
 
@@ -75,13 +75,9 @@ WORKDIR /build/spam/AIPS
 
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SPAM_PATH/lib"
 
-# RUN ls -l
-# 
-# WORKDIR /build/spam
 
-
-ADD files/.AIPSRC .AIPSRC
-RUN cat .AIPSRC
+# ADD files/.AIPSRC .AIPSRC
+# RUN cat .AIPSRC
 
 COPY files/install_aips.sh .
 COPY files/install.exp .
