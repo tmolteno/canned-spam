@@ -6,11 +6,14 @@ services:
             context: .
         volumes:
             -   ~/tart_web_api_store:/app
+            
+        stdin_open: true # docker run -i
+        tty: true        # docker run -t
         # Comment the following two lines to disable access to the TART hardware (this allows testing of software on a desktop)
         # environment:
             # Change the following to be something secure. You will use this to login to your telescope from the web api.
             # - LOGIN_PW=${LOGIN_PW}
-        restart: never
+        restart: no
         logging:
             driver: "json-file"
             options:

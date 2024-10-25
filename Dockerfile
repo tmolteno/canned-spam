@@ -4,18 +4,17 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 
 # debian setup
-RUN apt-get update 
-RUN apt-get -y upgrade
-RUN apt-get install -y build-essential make swig
-
-RUN apt-get install -y \
+RUN apt-get update && \
+    apt-get install -y build-essential make swig \
     curl \
     python-matplotlib \
     python-numpy \
-    python-scipy 
+    python-scipy \
+    mplayer \
+    imagemagick \
+    expect cvs
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
-RUN apt-get install -y mplayer imagemagick
 
 # RUN rm -rf /var/lib/apt/lists/*
 
@@ -24,8 +23,6 @@ WORKDIR /build
 
 RUN groupadd -g 1234 spamgroup && \
     useradd -m -u 1234 -g spamgroup spamuser
-
-RUN apt-get install -y expect cvs
 
 
 USER spamuser:spamgroup
@@ -60,27 +57,49 @@ ENV PATH="$SPAM_PATH/bin:$PATH"
 RUN tar xzf AIPS_31DEC13.tgz
 WORKDIR /build/spam/AIPS
 
+WORKDIR /build/spam/lib
+USER root
+ADD https://ftp.strw.leidenuniv.nl/intema/spam/lib/libfftw3f.so.3 /usr/local/lib/
+ADD https://ftp.strw.leidenuniv.nl/intema/spam/lib/libgslcblas.so.0 /usr/local/lib/
+ADD https://ftp.strw.leidenuniv.nl/intema/spam/lib/libquadmath.so.0 /usr/local/lib/
+ADD https://ftp.strw.leidenuniv.nl/intema/spam/lib/libgfortran.so.3 /usr/local/lib/
+# RUN echo $LD_LIBRARY_PATH
+ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib:$SPAM_PATH/lib"
+RUN ldconfig
+
+
+USER spamuser:spamgroup
+WORKDIR /build/spam/AIPS
+
+ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib:$SPAM_PATH/lib"
+
+# RUN ls -l
+# 
+# WORKDIR /build/spam
 
 
 ADD files/.AIPSRC .AIPSRC
 RUN cat .AIPSRC
 
+COPY files/install_aips.sh .
 COPY files/install.exp .
 
+# CMD autoexpect -p ./install_aips.sh; cat script.exp
 RUN ./install.exp
-
-USER root
-
-
 
 # Configuring AIPS using the expect script which provides inputs for the
 # prompts from AIPS commands. 
 COPY files/services /root/services
+
+COPY files/configure_aips.sh .
+# CMD autoexpect -p ./configure_aips.sh; cat script.exp
 COPY files/script.exp .
-
 RUN ./script.exp
-RUN chmod +x LOGIN.SH
 
+
+## GOING UP TO HERE
+
+USER root
 
 
     
@@ -103,18 +122,10 @@ RUN tar zxf obit_20160115.tgz
 ## Install parseltongue
 
 ENV PYTHONPATH="$SPAM_PATH/Obit/python:$PYTHONPATH"
-ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SPAM_PATH/lib"
 
 RUN apt-get autoremove
-RUN aptitude install -y -f build-essential
+RUN apt-get install -y -f build-essential
 
-WORKDIR /build/spam/lib
-ADD https://ftp.strw.leidenuniv.nl/intema/spam/lib/libfftw3f.so.3 .
-ADD https://ftp.strw.leidenuniv.nl/intema/spam/lib/libgslcblas.so.0 .
-ADD https://ftp.strw.leidenuniv.nl/intema/spam/lib/libquadmath.so.0 .
-RUN ls -l
-
-WORKDIR /build/spam
 COPY test.py .
 RUN python2.7 test.py
 
@@ -127,7 +138,9 @@ RUN make install
 
 WORKDIR /build/spam
 RUN ls -l
-RUN tar xzf spam_2*.tgz
+RUN tar xzf spam.tgz
 WORKDIR /build/spam/python/spam
 
 RUN make
+
+CMD /bin/bash
