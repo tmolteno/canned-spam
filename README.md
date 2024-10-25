@@ -8,6 +8,12 @@ SPAM has lots of weird dependencies, and this is a dockerized install Hopefully 
 
 You need Docker installed, as well as docker compose (to make things easiest). Then build the docker container on your local machine.
 
+The first step is to download the installation files (~600 MB in size. do this only once)
+
+    make get
+    
+Then build the SPAM docker container
+
     make build
     
 Then run the SPAM docker container

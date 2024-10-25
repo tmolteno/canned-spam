@@ -123,11 +123,10 @@ RUN tar zxf obit_20160115.tgz
 
 ENV PYTHONPATH="$SPAM_PATH/Obit/python:$PYTHONPATH"
 
-RUN apt-get autoremove
-RUN apt-get install -y -f build-essential
-
-COPY test.py .
+## Now do some testing to see what libraries are missing
+COPY files/test.py .
 RUN python2.7 test.py
+RUN rm test.py
 
 RUN tar xzf parseltongue-2.3e.tgz
 WORKDIR /build/spam/parseltongue-2.3e
@@ -144,6 +143,8 @@ WORKDIR /build/spam/python/spam
 RUN make
 
 WORKDIR /build/spam
+
+## Install old version of astropy suitable for use with python2
 
 RUN curl 'https://raw.githubusercontent.com/pypa/get-pip/20.3.4/get-pip.py' -o get-pip.py
 RUN python get-pip.py
