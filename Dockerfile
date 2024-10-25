@@ -14,6 +14,7 @@ RUN apt-get update && \
     imagemagick \
     expect cvs
 
+RUN apt-get install -y fish
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
 
 # RUN rm -rf /var/lib/apt/lists/*
@@ -63,15 +64,16 @@ ADD https://ftp.strw.leidenuniv.nl/intema/spam/lib/libfftw3f.so.3 /usr/local/lib
 ADD https://ftp.strw.leidenuniv.nl/intema/spam/lib/libgslcblas.so.0 /usr/local/lib/
 ADD https://ftp.strw.leidenuniv.nl/intema/spam/lib/libquadmath.so.0 /usr/local/lib/
 ADD https://ftp.strw.leidenuniv.nl/intema/spam/lib/libgfortran.so.3 /usr/local/lib/
-# RUN echo $LD_LIBRARY_PATH
-ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib:$SPAM_PATH/lib"
 RUN ldconfig
 
+# Clean up a bad version of libtinfo installed as part of the AIPS
+RUN rm /build/spam/lib/libtinfo.so.6
+RUN apt-get install -y libncurses6 libtinfo6
 
 USER spamuser:spamgroup
 WORKDIR /build/spam/AIPS
 
-ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib:$SPAM_PATH/lib"
+ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SPAM_PATH/lib"
 
 # RUN ls -l
 # 
@@ -151,4 +153,4 @@ RUN python get-pip.py
 RUN pip install astropy
 
 RUN . ./setup.sh
-CMD cd /spam_store; /bin/sh -i
+CMD cd /spam_store; /usr/bin/fish -i
