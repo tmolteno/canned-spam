@@ -1,6 +1,6 @@
-# canned-spam
+# Canned-SPAM
 
-A containerised SPAM installation that can run on modern systems.
+A containerised SPAM radio astronomy imaging installation that can run on modern systems.
 
 SPAM has lots of weird dependencies, and this is a dockerized install Hopefully this means it fully documents the process of installation of SPAM.
 
@@ -8,8 +8,12 @@ SPAM has lots of weird dependencies, and this is a dockerized install Hopefully 
 
 You need Docker installed, as well as docker compose (to make things easiest). Then build the docker container on your local machine.
 
-### Pre-requisite 
+### Pre-requisite Steps
 
+Create a directory in your home directory called spam_store. We do this first to avoid docker creating it with root access only.
+
+    mkdir -p ~/spam_store
+    
 The first step is to download the installation files (~600 MB in size. do this only once)
 
     make get

@@ -2,16 +2,16 @@ DOCKER=/usr/bin/docker
 COMPOSE=/usr/bin/docker compose --progress plain
 
 run:
-	CURRENT_UID=$(id -u):$(id -g) ${COMPOSE} --parallel 1 -f docker-compose.yml run --rm spam
+	HOST_UID=$(shell id -u) HOST_GID=$(shell id -g) ${COMPOSE} --parallel 1 -f docker-compose.yml run --rm spam
 
 docker_build:
-	docker build --tag spam_image .
+	docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) --tag spam_image .
 
 docker_run:
-	docker run -i -t -v ~/spam_store:/spam_store spam_image
+	docker run --workdir /spam_store --user $(shell id -u):$(shell id -g) -i -t -v ~/spam_store:/spam_store spam_image
 
 build:
-	${COMPOSE} --parallel 1 -f docker-compose.yml build
+	HOST_UID=$(shell id -u) HOST_GID=$(shell id -g) ${COMPOSE} --parallel 1 -f docker-compose.yml build
 
 # Huge download ~600 MB
 get:

@@ -4,11 +4,14 @@ services:
     spam:
         build: 
             context: .
+            args:
+                UID: ${HOST_UID}
+                GID: ${HOST_GID}
         volumes:
             -   ~/spam_store:/spam_store
         stdin_open: true # docker run -i
         tty: true        # docker run -t
-        user: ${CURRENT_UID}
+        user: ${HOST_UID}:${HOST_GID}
         restart: no
         logging:
             driver: "json-file"

@@ -1,7 +1,8 @@
 FROM debian:10
 LABEL Maintainer: Tim Molteno "tim@elec.ac.nz"
 ARG DEBIAN_FRONTEND=noninteractive
-
+ARG UID
+ARG GID
 
 # debian setup
 RUN apt-get update && \
@@ -22,8 +23,8 @@ RUN rm -rf /var/lib/apt/lists/*
 WORKDIR /build 
 
 
-RUN groupadd -g 1234 spamgroup && \
-    useradd -m -u 1234 -g spamgroup spamuser
+RUN addgroup --gid $GID spamgroup
+RUN adduser --uid $UID --gid $GID --disabled-password --gecos "" spamuser
 
 
 USER spamuser:spamgroup
@@ -147,6 +148,10 @@ WORKDIR /build/spam
 RUN curl 'https://raw.githubusercontent.com/pypa/get-pip/20.3.4/get-pip.py' -o get-pip.py
 RUN python get-pip.py
 RUN pip install astropy
+
+RUN mkdir /spam_store
+RUN chown -R spamuser:spamgroup /spam_store
+USER spamuser:spamgroup
 
 RUN . ./setup.sh
 CMD cd /spam_store; /usr/bin/fish -i
