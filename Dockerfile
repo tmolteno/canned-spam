@@ -150,4 +150,4 @@ RUN python get-pip.py
 RUN pip install astropy
 
 RUN . ./setup.sh
-CMD /bin/sh -i
+CMD cd /spam_store; /bin/sh -i

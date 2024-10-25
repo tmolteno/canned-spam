@@ -5,7 +5,7 @@ services:
         build: 
             context: .
         volumes:
-            -   ~/tart_web_api_store:/app
+            -   ~/spam_store:/spam_store
             
         stdin_open: true # docker run -i
         tty: true        # docker run -t
