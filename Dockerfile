@@ -65,6 +65,9 @@ ADD https://ftp.strw.leidenuniv.nl/intema/spam/lib/libfftw3f.so.3 /usr/local/lib
 ADD https://ftp.strw.leidenuniv.nl/intema/spam/lib/libgslcblas.so.0 /usr/local/lib/
 ADD https://ftp.strw.leidenuniv.nl/intema/spam/lib/libquadmath.so.0 /usr/local/lib/
 ADD https://ftp.strw.leidenuniv.nl/intema/spam/lib/libgfortran.so.3 /usr/local/lib/
+RUN chmod 0444 /usr/local/lib/*
+
+ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib:$SPAM_PATH/lib"
 RUN ldconfig
 
 # Clean up a bad version of libtinfo installed as part of the AIPS
@@ -74,7 +77,6 @@ RUN apt-get install -y libncurses6 libtinfo6
 USER spamuser:spamgroup
 WORKDIR /build/spam/AIPS
 
-ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SPAM_PATH/lib"
 
 
 # ADD files/.AIPSRC .AIPSRC
@@ -142,15 +144,16 @@ WORKDIR /build/spam/python/spam
 RUN make
 
 WORKDIR /build/spam
+RUN mkdir /spam_store
+RUN chown -R spamuser:spamgroup /spam_store
 
 ## Install old version of astropy suitable for use with python2
+USER spamuser:spamgroup
 
 RUN curl 'https://raw.githubusercontent.com/pypa/get-pip/20.3.4/get-pip.py' -o get-pip.py
 RUN python get-pip.py
-RUN pip install astropy
+RUN /home/spamuser/.local/bin/pip install astropy
 
-RUN mkdir /spam_store
-RUN chown -R spamuser:spamgroup /spam_store
 USER spamuser:spamgroup
 
 RUN . ./setup.sh

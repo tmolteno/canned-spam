@@ -16,3 +16,6 @@ build:
 # Huge download ~600 MB
 get:
 	cd files; sh get_files.sh
+
+push:
+	docker push tmolteno/canned-spam:latest
