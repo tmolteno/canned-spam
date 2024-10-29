@@ -77,9 +77,11 @@ LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SPAM_PATH/lib"
 # CMD autoexpect -p ./install_aips.sh; cat script.exp
 mv /build/non_root_install.exp .
 mv /build/install_aips.sh .
+mv /build/script.exp .
+mv /build/configure_aips.sh .
 
 # Remove the root check from AIPS install
-sed -i '0,/\$found =~ \/yes\/s//0/g' install.pl
+sed -i '0,/\$found =~ \/yes\//s//0/' install.pl
 
 ./non_root_install.exp
 
@@ -101,7 +103,7 @@ tar zxf obit_20160115.tgz
 
 ## Install parseltongue
 
-PYTHONPATH="$SPAM_PATH/Obit/python:$PYTHONPATH"
+export PYTHONPATH="$SPAM_PATH/Obit/python:$PYTHONPATH"
 
 ## Now do some testing to see what libraries are missing
 python2.7 test.py
@@ -131,7 +133,7 @@ curl 'https://raw.githubusercontent.com/pypa/get-pip/20.3.4/get-pip.py' -o get-p
 python get-pip.py
 pip install astropy
 
-mkdir /spam_store
+mkdir -p /spam_store
 
 . ./setup.sh
 %environment

@@ -93,16 +93,6 @@ RUN ./script.exp
 USER root
 
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
 ## Install Orbit Core
 
 WORKDIR /build/spam
