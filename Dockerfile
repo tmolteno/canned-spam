@@ -38,16 +38,10 @@ COPY files/AIPS_31DEC13.tgz .
 COPY files/parseltongue-2.3e.tgz .
 COPY files/obit_20160115.tgz .
 
+
 # Install SPAM support files
 
 RUN tar xzf spam_etc.tgz
-
-RUN ls -l
-#export SPAM_PATH=/net/dedemsvaart/data1/spam_devel
-#export SPAM_HOST=DEDEMSVAART
-#export PYTHON=/usr/bin/python2.7
-#export PATH=${SPAM_PATH}/bin:${PATH}
-
 
 # Do  this instead of running setup.sh
 ENV PYTHON=/usr/bin/python2.7
@@ -56,6 +50,7 @@ ENV SPAM_HOST DEDEMSVAART
 ENV PATH="$SPAM_PATH/bin:$PATH"
 
 # Install AIPS_31DEC13
+
 RUN tar xzf AIPS_31DEC13.tgz
 WORKDIR /build/spam/AIPS
 
@@ -76,11 +71,6 @@ RUN apt-get install -y libncurses6 libtinfo6
 
 USER spamuser:spamgroup
 WORKDIR /build/spam/AIPS
-
-
-
-# ADD files/.AIPSRC .AIPSRC
-# RUN cat .AIPSRC
 
 COPY files/install_aips.sh .
 COPY files/install.exp .

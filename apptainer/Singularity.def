@@ -1,0 +1,149 @@
+Bootstrap: docker
+From: debian:10
+Stage: spython-base
+
+%files
+    ../files/spam_20240308.tgz /build/spam.tgz
+    ../files/spam_etc_20181208.tgz /build/spam_etc.tgz
+    ../files/AIPS_31DEC13.tgz /build
+    ../files/parseltongue-2.3e.tgz /build
+    ../files/obit_20160115.tgz /build
+    ../files/install_aips.sh /build
+    ../files/non_root_install.exp /build
+    ../files/services /root/services
+    ../files/configure_aips.sh /build
+    ../files/script.exp /build
+    ../files/test.py /build
+%labels
+Maintainer: Tim Molteno "tim@elec.ac.nz"
+%post
+DEBIAN_FRONTEND=noninteractive
+
+# debian setup
+apt-get update && \
+apt-get install -y build-essential make swig \
+curl \
+python-matplotlib \
+python-numpy \
+python-scipy \
+mplayer \
+imagemagick \
+expect cvs
+
+apt-get install -y fish vim sudo
+update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
+
+rm -rf /var/lib/apt/lists/*
+
+useradd -ms /bin/bash -U spamuser
+
+# Install SPAM support files
+
+cd /build
+tar xzf spam_etc.tgz
+
+ls -l
+
+
+# Do  this instead of running setup.sh
+PYTHON=/usr/bin/python2.7
+SPAM_PATH=/build
+SPAM_HOST=DEDEMSVAART
+PATH="$SPAM_PATH/bin:$PATH"
+
+# Install AIPS_31DEC13
+tar xzf AIPS_31DEC13.tgz
+
+cd /build/AIPS
+cd /build/lib
+
+# su -  root # USER root
+curl https://ftp.strw.leidenuniv.nl/intema/spam/lib/libfftw3f.so.3 -o /usr/local/lib//libfftw3f.so.3
+curl https://ftp.strw.leidenuniv.nl/intema/spam/lib/libgslcblas.so.0 -o /usr/local/lib//libgslcblas.so.0
+curl https://ftp.strw.leidenuniv.nl/intema/spam/lib/libquadmath.so.0 -o /usr/local/lib//libquadmath.so.0
+curl https://ftp.strw.leidenuniv.nl/intema/spam/lib/libgfortran.so.3 -o /usr/local/lib//libgfortran.so.3
+ldconfig
+
+# Clean up a bad version of libtinfo installed as part of the AIPS
+rm /build/lib/libtinfo.so.6
+apt-get install -y libncurses6 libtinfo6
+
+mkdir -p /build/AIPS
+cd /build/AIPS
+
+LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SPAM_PATH/lib"
+
+
+# CMD autoexpect -p ./install_aips.sh; cat script.exp
+mv /build/non_root_install.exp .
+mv /build/install_aips.sh .
+
+# Remove the root check from AIPS install
+sed -i 's/\$found =~ \/yes\//0/g' install.pl
+
+./non_root_install.exp
+
+# Configuring AIPS using the expect script which provides inputs for the
+# prompts from AIPS commands. 
+
+# CMD autoexpect -p ./configure_aips.sh; cat script.exp
+./script.exp
+
+
+
+
+## Install Orbit Core
+
+mkdir -p /build
+cd /build
+tar zxf obit_20160115.tgz
+
+
+## Install parseltongue
+
+PYTHONPATH="$SPAM_PATH/Obit/python:$PYTHONPATH"
+
+## Now do some testing to see what libraries are missing
+python2.7 test.py
+rm test.py
+
+tar xzf parseltongue-2.3e.tgz
+mkdir -p /build/parseltongue-2.3e
+cd /build/parseltongue-2.3e
+./configure --prefix=$SPAM_PATH/ParselTongue --with-obit=$SPAM_PATH/Obit
+make install
+
+# Install SPAM
+
+cd /build
+
+tar xzf spam.tgz
+mkdir -p /build/python/spam
+cd /build/python/spam
+make
+
+
+cd /build
+
+## Install old version of astropy suitable for use with python2
+
+curl 'https://raw.githubusercontent.com/pypa/get-pip/20.3.4/get-pip.py' -o get-pip.py
+python get-pip.py
+pip install astropy
+
+mkdir /spam_store
+
+. ./setup.sh
+%environment
+    export PYTHON=/usr/bin/python2.7
+    export SPAM_PATH=/build
+    export SPAM_HOST=DEDEMSVAART
+    export PATH="$SPAM_PATH/bin:$PATH"
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SPAM_PATH/lib"
+    export PYTHONPATH="$SPAM_PATH/Obit/python:$PYTHONPATH"
+%runscript
+    cd /build
+    exec /bin/bash cd /spam_store; /usr/bin/fish -i "$@"
+%startscript
+    cd /build
+    exec /bin/bash cd /spam_store; /usr/bin/fish -i "$@"
