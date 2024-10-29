@@ -79,7 +79,7 @@ mv /build/non_root_install.exp .
 mv /build/install_aips.sh .
 
 # Remove the root check from AIPS install
-sed -i 's/\$found =~ \/yes\//0/g' install.pl
+sed -i '0,/\$found =~ \/yes\/s//0/g' install.pl
 
 ./non_root_install.exp
 
