@@ -1,12 +1,19 @@
-## Running with Singularity rather than docker
+## Running with Apptainer (or singularity) rather than docker
 
-Set up a virtual invironment
+First build the apptainer image. This will create  a ~1.5 GB file called spam.sif. This is the SPAM application.
 
-    pip3 install spython
+    make get   # if not done already
+    make build
+    
+## Usage
 
-    spython recipe Dockerfile > Singularity.def
-
-    sudo singularity build spam.sif Singularity.def
+    apptainer exec spam.sif
 
     
-    apptainer --bind ~/spam_store:/spam_store spam.sif
+### Installing Apptainer
+
+
+    wget https://github.com/apptainer/apptainer/releases/download/v1.3.4/apptainer_1.3.4_amd64.deb
+    sudo apt install -y ./apptainer_1.3.4_amd64.deb
+    wget https://github.com/apptainer/apptainer/releases/download/v1.3.4/apptainer-suid_1.3.4_amd64.deb
+    sudo dpkg -i ./apptainer-suid_1.3.4_amd64.deb
