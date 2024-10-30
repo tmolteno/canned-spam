@@ -4,7 +4,14 @@ A containerised SPAM radio astronomy imaging installation that can run on modern
 
 SPAM has lots of weird dependencies, and this is a dockerized install Hopefully this means it fully documents the process of installation of SPAM.
 
-## Instructions
+## Apptainer (singularity) Instructions
+
+I recommend using apptainer (or singularity) to run SPAM. This helps with lots of issues where root priveleges are required.  All the instructions are in the ```apptainer``` directory. Essentially use singularity/apptainer to build the image... Then run it with
+
+    apptainer shell /path/to/spam.sif
+
+
+## Docker Instructions
 
 You need Docker installed, as well as docker compose (to make things easiest). Then build the docker container on your local machine.
 
